@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金色流星雨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* 关键修改：使用Flexbox布局 */
+        html, body {
+            height: 100%;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            background: #0c0e1c;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow: auto;
+            position: relative;
+        }
+        
+        /* 背景图片容器 */
+        .background-img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        
+        /* 关键修改：主容器使用flex-grow */
+        .container {
+            flex: 1 0 auto; /* 允许容器扩展填充空间 */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-wrapper {
+            flex: 1; /* 内容区域填充剩余空间 */
+        }
+        
+        header {
+            text-align: center;
+            padding: 3rem 0 2rem;
+            animation: fadeIn 2s ease-in-out;
+        }
+        
+        h1 {
+            font-size: 4.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            background: linear-gradient(to right, #FFD700, #FFA500, #FFD700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            animation: glow 3s infinite alternate;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+            color: #e6e6e6;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+        }
+        
+        /* 流星容器 */
+        .meteor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        /* 优化流星样式 */
+        .meteor {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8);
+            animation: meteor-fall linear forwards;
+            z-index: 3;
+        }
+        
+        .meteor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255, 215, 0, 0.8), transparent);
+            transform: translate(-100%, -50%) rotate(30deg);
+            transform-origin: right center;
+            z-index: 2;
+        }
+        
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+        
+        .moon {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, #f9f3c2 0%, #d8c86e 100%);
+            border-radius: 50%;
+            top: 80px;
+            right: 150px;
+            box-shadow: 0 0 50px rgba(249, 243, 194, 0.6);
+            animation: moon-glow 4s infinite alternate ease-in-out;
+            z-index: 2;
+        }
+        
+        .moon::after {
+            content: '';
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            background: rgba(100, 100, 100, 0.1);
+            border-radius: 50%;
+            top: 15px;
+            left: 30px;
+        }
+        
+
+        .footer {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 1.5rem;
+            color: #aaa;
+            font-size: 1rem;
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .wish-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #222;
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 12px 28px;
+            border-radius: 50px;
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.4);
+        }
+        
+        .wish-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 165, 0, 0.6);
+        }
+        
+        /* 动画定义 */
+        @keyframes meteor-fall {
+            0% {
+                transform: translateY(-100px) rotate(30deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(30deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes moon-glow {
+            0% {
+                box-shadow: 0 0 40px rgba(249, 243, 194, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 70px rgba(249, 243, 194, 0.8);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+            }
+            100% {
+                text-shadow: 0 0 30px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 165, 0, 0.6);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            h1 {
+                font-size: 3.5rem;
+            }
+            
+            .moon {
+                width: 100px;
+                height: 100px;
+                top: 50px;
+                right: 50px;
+            }
+            
+            .moon::after {
+                width: 80px;
+                height: 80px;
+                top: 10px;
+                left: 20px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .info-card {
+                padding: 1.5rem;
+            }
+            
+            .info-card h3 {
+                font-size: 1.5rem;
+            }
+            
+            .moon {
+                width: 80px;
+                height: 80px;
+                top: 30px;
+                right: 30px;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .footer {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景图片 -->
+    <img class="background-img" src="aqi.jpg" alt="星空背景">
+    
+    <!-- 背景遮罩 -->
+    <div class="background-overlay"></div>
+    
+    <!-- 流星容器 -->
+    <div class="meteor-container" id="meteor-container"></div>
+    
+    <!-- 月亮 -->
+    <div class="moon"></div>
+    
+    <!-- 内容容器 -->
+    <div class="container">
+        <div class="content-wrapper">
+            <header>
+                <h1>金色流星雨</h1>
+                <p class="subtitle">传说中，在布雷诺的春信来临之际，看到金色流星雨的人，将得到永不失去的爱情。</p>
+                <button class="wish-btn" id="wishBtn">许下愿望</button>
+            </header>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 金色流星雨 | 故事始于布雷诺 | 创作者：咩栀</p>
+        </div>
+    </div>
+    
+    <script>
+        // 创建星星背景
+        function createStars() {
+            const container = document.getElementById('meteor-container');
+            const starCount = 300;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // 随机位置
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+                
+                // 随机大小
+                const size = Math.random() * 3;
+                
+                // 随机闪烁时间
+                const duration = Math.random() * 5 + 3;
+                
+                // 随机亮度
+                const brightness = Math.random() * 0.8 + 0.2;
+                
+                star.style.left = `${posX}px`;
+                star.style.top = `${posY}px`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.opacity = brightness;
+                star.style.setProperty('--duration', `${duration}s`);
+                
+                container.appendChild(star);
+            }
+        }
+        
+        // 创建流星
+        function createMeteor() {
+            const container = document.getElementById('meteor-container');
+            const meteor = document.createElement('div');
+            meteor.classList.add('meteor');
+            
+            // 随机位置
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight / 2;
+            
+            // 随机大小
+            const size = Math.random() * 2 + 1;
+            
+            // 随机速度
+            const duration = Math.random() * 2 + 1;
+            
+            meteor.style.left = `${startX}px`;
+            meteor.style.top = `${startY}px`;
+            meteor.style.width = `${size}px`;
+            meteor.style.height = `${size}px`;
+            meteor.style.animationDuration = `${duration}s`;
+            
+            // 随机金色色调
+            const goldVariant = Math.random() > 0.5 ? '#FFD700' : '#FFA500';
+            meteor.style.background = goldVariant;
+            meteor.style.boxShadow = `0 0 15px 4px ${goldVariant}80`;
+            
+            container.appendChild(meteor);
+            
+            // 流星结束后移除元素
+            setTimeout(() => {
+                meteor.remove();
+            }, duration * 1000);
+        }
+        
+        // 创建特殊流星
+        function createSpecialMeteor() {
+            const container = document.getElementById('meteor-container');
+            const meteor = document.createElement('div');
+            meteor.classList.add('meteor');
+            
+            // 随机位置
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight / 3;
+            
+            meteor.style.left = `${startX}px`;
+            meteor.style.top = `${startY}px`;
+            meteor.style.width = '5px';
+            meteor.style.height = '5px';
+            meteor.style.animationDuration = '1.2s';
+            meteor.style.background = '#FFD700';
+            meteor.style.boxShadow = '0 0 25px 6px rgba(255, 215, 0, 0.95)';
+            
+            container.appendChild(meteor);
+            
+            // 流星结束后移除元素
+            setTimeout(() => {
+                meteor.remove();
+            }, 1200);
+        }
+        
+        // 许愿按钮功能
+        function setupWishButton() {
+            const wishBtn = document.getElementById('wishBtn');
+            wishBtn.addEventListener('click', () => {
+                // 创建三颗特别亮的流星
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        createSpecialMeteor();
+                    }, i * 300);
+                }
+                
+                // 显示愿望信息
+                wishBtn.textContent = "愿望已发送到星空！";
+                wishBtn.style.background = "linear-gradient(45deg, #4CAF50, #8BC34A)";
+                setTimeout(() => {
+                    wishBtn.textContent = "许下愿望";
+                    wishBtn.style.background = "linear-gradient(45deg, #FFD700, #FFA500)";
+                }, 3000);
+            });
+        }
+        
+        // 初始化
+        function init() {
+            createStars();
+            
+            // 初始创建一些流星
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    createMeteor();
+                }, i * 600);
+            }
+            
+            // 定时创建新流星
+            setInterval(() => {
+                if (Math.random() > 0.3) {
+                    createMeteor();
+                }
+            }, 400);
+            
+            // 设置许愿按钮
+            setupWishButton();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+        
+        // 窗口大小调整时重新创建星星
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('meteor-container');
+            container.innerHTML = '';
+            init();
+        });
+    </script>
+</body>
+</html>
